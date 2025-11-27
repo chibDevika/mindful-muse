@@ -13,50 +13,50 @@ interface HomeScreenProps {
 export function HomeScreen({ onStartRecording, onStartTyping, className }: HomeScreenProps) {
   return (
     <div className={cn(
-      "flex flex-col items-center justify-center min-h-screen px-6 py-12 gradient-calm",
+      "flex flex-col items-center justify-center min-h-screen px-6 py-16 gradient-calm",
       className
     )}>
       {/* Hero image */}
-      <div className="relative w-full max-w-lg mb-8 animate-fade-up">
+      <div className="relative w-full max-w-md mb-10 animate-fade-up">
         <img
           src={heroImage}
           alt="A serene moment of reflection"
-          className="w-full h-auto rounded-3xl shadow-card object-cover max-h-[300px]"
+          className="w-full h-auto rounded-4xl shadow-card object-cover max-h-[280px]"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-background/60 to-transparent rounded-3xl" />
+        <div className="absolute inset-0 bg-gradient-to-t from-background/40 to-transparent rounded-4xl" />
       </div>
 
       {/* Main heading */}
-      <div className="text-center mb-12 animate-fade-up animation-delay-100">
-        <div className="flex items-center justify-center gap-2 mb-4">
-          <Heart className="w-6 h-6 text-support fill-support/30" />
-          <span className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
+      <div className="text-center mb-14 animate-fade-up animation-delay-100">
+        <div className="flex items-center justify-center gap-2.5 mb-5">
+          <Heart className="w-5 h-5 text-support fill-support/20 animate-gentle-pulse" />
+          <span className="text-sm font-medium text-muted-foreground tracking-widest uppercase">
             Unwind
           </span>
         </div>
         
-        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-semibold text-foreground mb-4 leading-tight">
-          What are you feeling<br />right now?
+        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-medium text-foreground mb-5 leading-relaxed tracking-tight">
+          How are you feeling<br />right now?
         </h1>
         
-        <p className="text-lg text-muted-foreground max-w-md mx-auto">
-          Share what's on your mind. We're here to listen and reflect with you.
+        <p className="text-lg text-muted-foreground max-w-sm mx-auto leading-relaxed">
+          Take a moment. Share what's on your mind — we're here to listen.
         </p>
       </div>
 
       {/* Decorative waveform */}
-      <StaticWaveform className="w-full max-w-sm mb-12 opacity-50 animate-fade-up animation-delay-200" />
+      <StaticWaveform className="w-full max-w-xs mb-14 opacity-40 animate-fade-up animation-delay-200" />
 
       {/* CTA Buttons */}
-      <div className="flex flex-col sm:flex-row items-center gap-4 w-full max-w-md animate-fade-up animation-delay-300">
+      <div className="flex flex-col sm:flex-row items-center gap-4 w-full max-w-sm animate-fade-up animation-delay-300">
         <Button
           variant="support"
           size="xl"
           onClick={onStartRecording}
-          className="w-full sm:w-auto flex-1 gap-3"
+          className="w-full sm:w-auto flex-1 gap-3 shadow-soft"
         >
           <Mic className="w-5 h-5" />
-          Record your thoughts
+          Record thoughts
         </Button>
         
         <Button
@@ -71,8 +71,8 @@ export function HomeScreen({ onStartRecording, onStartTyping, className }: HomeS
       </div>
 
       {/* Privacy note */}
-      <p className="mt-8 text-xs text-muted-foreground text-center max-w-xs animate-fade-up animation-delay-400">
-        Your conversations stay on your device. We don't store or share your personal reflections.
+      <p className="mt-10 text-xs text-muted-foreground/80 text-center max-w-xs animate-fade-up animation-delay-400 leading-relaxed">
+        Your reflections stay on your device. Private and secure.
       </p>
     </div>
   );
