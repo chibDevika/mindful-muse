@@ -139,7 +139,13 @@ export function useAudioRecorder(): UseAudioRecorderReturn {
     if (mediaRecorderRef.current && state.isRecording) {
       mediaRecorderRef.current.stop();
       streamRef.current?.getTracks().forEach(track => track.stop());
-      audioContextRef.current?.close();
+      
+      // Safely close AudioContext if it exists and isn't already closed
+      if (audioContextRef.current && audioContextRef.current.state !== 'closed') {
+        audioContextRef.current.close().catch(() => {
+          // Ignore errors when closing
+        });
+      }
       
       setState(prev => ({ ...prev, isRecording: false, isPaused: false }));
       stopTimer();
@@ -166,7 +172,14 @@ export function useAudioRecorder(): UseAudioRecorderReturn {
     if (mediaRecorderRef.current) {
       mediaRecorderRef.current.stop();
       streamRef.current?.getTracks().forEach(track => track.stop());
-      audioContextRef.current?.close();
+      
+      // Safely close AudioContext if it exists and isn't already closed
+      if (audioContextRef.current && audioContextRef.current.state !== 'closed') {
+        audioContextRef.current.close().catch(() => {
+          // Ignore errors when closing
+        });
+      }
+      
       chunksRef.current = [];
       
       setState(prev => ({ 
@@ -189,7 +202,13 @@ export function useAudioRecorder(): UseAudioRecorderReturn {
     return () => {
       stopTimer();
       streamRef.current?.getTracks().forEach(track => track.stop());
-      audioContextRef.current?.close();
+      
+      // Safely close AudioContext if it exists and isn't already closed
+      if (audioContextRef.current && audioContextRef.current.state !== 'closed') {
+        audioContextRef.current.close().catch(() => {
+          // Ignore errors when closing
+        });
+      }
     };
   }, [stopTimer]);
 
