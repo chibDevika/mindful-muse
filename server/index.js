@@ -3,7 +3,7 @@
  * 
  * This server provides API endpoints for:
  * - Deepgram audio transcription
- * - OpenAI text processing with custom prompts
+ * - Google Gemini text processing with custom prompts
  */
 
 import express from 'express';
@@ -11,7 +11,7 @@ import cors from 'cors';
 import multer from 'multer';
 import dotenv from 'dotenv';
 import { deepgramRouter } from './routes/deepgram.js';
-import { openaiRouter } from './routes/openai.js';
+import { geminiRouter } from './routes/gemini.js';
 import { elevenlabsRouter } from './routes/elevenlabs.js';
 
 // Load environment variables
@@ -30,8 +30,8 @@ console.log(`   PORT: ${process.env.PORT || '3001 (default)'}`);
 console.log(`   FRONTEND_URL: ${process.env.FRONTEND_URL || 'http://localhost:8080 (default)'}`);
 console.log(`   DEEPGRAM_API_KEY: ${process.env.DEEPGRAM_API_KEY ? '✅ Set (' + process.env.DEEPGRAM_API_KEY.length + ' chars)' : '❌ Not set'}`);
 console.log(`   DEEPGRAM_API_URL: ${process.env.DEEPGRAM_API_URL || 'https://api.deepgram.com/v1 (default)'}`);
-console.log(`   OPENAI_API_KEY: ${process.env.OPENAI_API_KEY ? '✅ Set (' + process.env.OPENAI_API_KEY.length + ' chars)' : '❌ Not set'}`);
-console.log(`   OPENAI_API_URL: ${process.env.OPENAI_API_URL || 'https://api.openai.com/v1 (default)'}`);
+console.log(`   GEMINI_API_KEY: ${process.env.GEMINI_API_KEY ? '✅ Set (' + process.env.GEMINI_API_KEY.length + ' chars)' : '❌ Not set'}`);
+console.log(`   GEMINI_MODEL: ${process.env.GEMINI_MODEL || 'gemini-pro (default)'}`);
 console.log(`   ELEVENLABS_API_KEY: ${process.env.ELEVENLABS_API_KEY ? '✅ Set (' + process.env.ELEVENLABS_API_KEY.length + ' chars)' : '❌ Not set'}`);
 console.log(`   ELEVENLABS_API_URL: ${process.env.ELEVENLABS_API_URL || 'https://api.elevenlabs.io/v1 (default)'}`);
 console.log('');
@@ -68,7 +68,7 @@ app.get('/health', (req, res) => {
 
 // API Routes
 app.use('/api/deepgram', deepgramRouter);
-app.use('/api/openai', openaiRouter);
+app.use('/api/gemini', geminiRouter);
 app.use('/api/elevenlabs', elevenlabsRouter);
 
 // Error handling middleware
@@ -86,7 +86,7 @@ app.use((req, res) => {
   console.error(`   Available routes:`);
   console.error(`   - GET  /health`);
   console.error(`   - POST /api/deepgram/transcribe`);
-  console.error(`   - POST /api/openai/generate`);
+  console.error(`   - POST /api/gemini/generate`);
   res.status(404).json({ 
     error: 'Not found',
     method: req.method,
@@ -94,7 +94,7 @@ app.use((req, res) => {
     availableRoutes: [
       'GET /health',
       'POST /api/deepgram/transcribe',
-      'POST /api/openai/generate',
+      'POST /api/gemini/generate',
       'POST /api/elevenlabs/tts'
     ]
   });
@@ -105,7 +105,7 @@ app.listen(PORT, () => {
   console.log(`🚀 Backend server running on http://localhost:${PORT}`);
   console.log(`📝 Health check: http://localhost:${PORT}/health`);
   console.log(`🎙️  Deepgram endpoint: http://localhost:${PORT}/api/deepgram/transcribe`);
-  console.log(`🤖 OpenAI endpoint: http://localhost:${PORT}/api/openai/generate`);
+  console.log(`🤖 Gemini endpoint: http://localhost:${PORT}/api/gemini/generate`);
   console.log(`🔊 ElevenLabs endpoint: http://localhost:${PORT}/api/elevenlabs/tts`);
 });
 

@@ -1,17 +1,17 @@
 /**
- * OpenAI API Routes
- * Handles text processing with OpenAI using custom prompts
+ * Gemini API Routes
+ * Handles text processing with Google Gemini API using custom prompts
  */
 
 import express from 'express';
-import { generateResponse } from '../services/openai.js';
+import { generateResponse } from '../services/gemini.js';
 
 const router = express.Router();
 
 /**
- * POST /api/openai/generate
+ * POST /api/gemini/generate
  * 
- * Generates AI response using OpenAI with custom prompt template
+ * Generates AI response using Google Gemini API with custom prompt template
  * 
  * Body:
  * {
@@ -36,7 +36,7 @@ const router = express.Router();
  * }
  */
 router.post('/generate', async (req, res, next) => {
-  console.log(`\n🤖 [OPENAI ROUTE] POST /api/openai/generate hit!`);
+  console.log(`\n🤖 [GEMINI ROUTE] POST /api/gemini/generate hit!`);
   console.log(`   Request received at: ${new Date().toISOString()}`);
   console.log(`   Body keys:`, Object.keys(req.body || {}));
   
@@ -70,8 +70,8 @@ router.post('/generate', async (req, res, next) => {
     console.log(`   User text (first 100 chars): ${promptVariables.userText.substring(0, 100)}...`);
     console.log(`   Context length: ${promptVariables.context?.length || 0} messages`);
 
-    // Call OpenAI service
-    console.log(`\n🔄 Calling OpenAI service...`);
+    // Call Gemini service
+    console.log(`\n🔄 Calling Gemini service...`);
     const result = await generateResponse(
       promptTemplateId,
       promptVariables,
@@ -90,7 +90,7 @@ router.post('/generate', async (req, res, next) => {
       metadata: result.metadata || {},
     });
   } catch (error) {
-    console.error(`\n❌ [OPENAI ROUTE ERROR]`);
+    console.error(`\n❌ [GEMINI ROUTE ERROR]`);
     console.error(`   Error type: ${error.constructor.name}`);
     console.error(`   Error message: ${error.message}`);
     console.error(`   Error stack:`, error.stack);
@@ -98,8 +98,5 @@ router.post('/generate', async (req, res, next) => {
   }
 });
 
-export { router as openaiRouter };
-
-
-
+export { router as geminiRouter };
 

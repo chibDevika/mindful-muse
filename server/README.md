@@ -9,10 +9,10 @@ server/
 ├── index.js              # Main Express server
 ├── routes/
 │   ├── deepgram.js      # Deepgram transcription endpoints
-│   └── openai.js        # OpenAI text processing endpoints
+│   └── gemini.js        # Google Gemini text processing endpoints
 └── services/
     ├── deepgram.js      # Deepgram API integration
-    └── openai.js        # OpenAI API integration
+    └── gemini.js        # Google Gemini API integration
 ```
 
 ## Setup
@@ -30,7 +30,7 @@ server/
 3. **Configure API keys:**
    Edit `server/.env` and add your API keys:
    - `DEEPGRAM_API_KEY` - Get from https://console.deepgram.com/
-   - `OPENAI_API_KEY` - Get from https://platform.openai.com/api-keys
+   - `GEMINI_API_KEY` - Get from https://aistudio.google.com/app/apikey
 
 ## Running the Server
 
@@ -71,9 +71,9 @@ Response:
 }
 ```
 
-### 3. OpenAI Generation
+### 3. Gemini Generation
 ```
-POST /api/openai/generate
+POST /api/gemini/generate
 Content-Type: application/json
 
 Body:
@@ -114,7 +114,7 @@ You can customize the AI prompt in several ways:
    ```
 
 3. **Edit the code:**
-   Modify the `getPromptTemplate()` function in `server/services/openai.js`
+   Modify the `getPromptTemplate()` function in `server/services/gemini.js`
 
 ## Environment Variables
 

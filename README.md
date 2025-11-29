@@ -28,7 +28,7 @@ The app connects to three backend APIs. Set these environment variables:
 ```env
 # API Base URLs
 VITE_DEEPGRAM_BASE=https://your-api.com/api/deepgram
-VITE_OPENAI_BASE=https://your-api.com/api/openai
+VITE_GEMINI_BASE=https://your-api.com/api/gemini
 VITE_ELEVENLABS_BASE=https://your-api.com/api/elevenlabs
 
 # Session TTL (optional, default: 1 hour)
@@ -54,10 +54,10 @@ Response:
 }
 ```
 
-### 2. OpenAI/LLM Generation
+### 2. Gemini/LLM Generation
 
 ```
-POST /api/openai/generate
+POST /api/gemini/generate
 Content-Type: application/json
 
 Body:
@@ -196,7 +196,7 @@ src/
 - [ ] Configure `{{AI_PROMPT_TEMPLATE}}` on backend
 - [ ] Add API keys to backend environment
 - [ ] Set `VITE_DEEPGRAM_BASE` environment variable
-- [ ] Set `VITE_OPENAI_BASE` environment variable
+- [ ] Set `VITE_GEMINI_BASE` environment variable
 - [ ] Set `VITE_ELEVENLABS_BASE` environment variable
 - [ ] Test audio recording in target browsers
 - [ ] Test on mobile devices

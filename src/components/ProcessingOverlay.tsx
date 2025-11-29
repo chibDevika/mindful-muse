@@ -9,7 +9,7 @@ interface ProcessingOverlayProps {
 
 export function ProcessingOverlay({
   isVisible,
-  message = "Thoughtfully responding...",
+  message = "Thinking about what you said...",
   className,
 }: ProcessingOverlayProps) {
   if (!isVisible) return null;
@@ -57,7 +57,7 @@ export function MessageSkeleton({ className }: { className?: string }) {
         </div>
         <div className="flex items-center gap-2 mt-4 text-sm text-muted-foreground">
           <Loader2 className="w-4 h-4 animate-spin" />
-          <span>Thoughtfully responding...</span>
+          <span>Thinking about what you said...</span>
         </div>
       </div>
     </div>

@@ -88,7 +88,7 @@ export default function Index() {
 
     // Generate AI response
     setIsProcessing(true);
-    setProcessingMessage('Thoughtfully responding...');
+    setProcessingMessage('Thinking about what you said...');
     
     // Create placeholder for assistant message
     const placeholderMessage = addMessage('assistant', '');

@@ -4,14 +4,14 @@
  * 
  * TODO: Set these environment variables before deployment:
  * - VITE_DEEPGRAM_BASE: Base URL for Deepgram transcription API
- * - VITE_OPENAI_BASE: Base URL for OpenAI/LLM API
+ * - VITE_GEMINI_BASE: Base URL for Google Gemini/LLM API
  * - VITE_ELEVENLABS_BASE: Base URL for ElevenLabs TTS API
  * - VITE_SESSION_TTL: Session time-to-live in milliseconds (default: 3600000)
  */
 
 // API Base URLs - Replace with your actual endpoints
 const DEEPGRAM_BASE = import.meta.env.VITE_DEEPGRAM_BASE || '/api/deepgram';
-const OPENAI_BASE = import.meta.env.VITE_OPENAI_BASE || '/api/openai';
+const GEMINI_BASE = import.meta.env.VITE_GEMINI_BASE || '/api/gemini';
 const ELEVENLABS_BASE = import.meta.env.VITE_ELEVENLABS_BASE || '/api/elevenlabs';
 
 interface RetryConfig {
@@ -137,7 +137,7 @@ export async function transcribeAudio(
 }
 
 // ============================================================================
-// OPENAI / LLM GENERATION API
+// GEMINI / LLM GENERATION API
 // ============================================================================
 
 export interface GenerateRequest {
@@ -158,9 +158,9 @@ export interface GenerateResponse {
 }
 
 /**
- * Generate AI response using OpenAI/LLM API
+ * Generate AI response using Google Gemini API
  * 
- * POST /api/openai/generate
+ * POST /api/gemini/generate
  * Content-Type: application/json
  * Body: { promptTemplateId: string, promptVariables: {...}, sessionId: string }
  * 
@@ -172,10 +172,10 @@ export async function generateResponse(
   sessionId: string,
   context: Array<{ role: 'user' | 'assistant'; content: string }> = []
 ): Promise<GenerateResponse> {
-  const url = `${OPENAI_BASE}/generate`;
-  console.log(`\n🤖 [FRONTEND] Starting OpenAI generation request`);
+  const url = `${GEMINI_BASE}/generate`;
+  console.log(`\n🤖 [FRONTEND] Starting Gemini generation request`);
   console.log(`   URL: ${url}`);
-  console.log(`   OPENAI_BASE: ${OPENAI_BASE}`);
+  console.log(`   GEMINI_BASE: ${GEMINI_BASE}`);
   console.log(`   Session ID: ${sessionId}`);
   console.log(`   User text: ${userText.substring(0, 100)}...`);
   console.log(`   Context messages: ${context.length}`);

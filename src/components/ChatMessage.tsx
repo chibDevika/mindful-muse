@@ -49,7 +49,7 @@ export function ChatMessage({
         {isGenerating && (
           <div className="flex items-center gap-2 mt-3 text-sm text-muted-foreground">
             <Loader2 className="w-4 h-4 animate-spin" />
-            <span>Thoughtfully responding...</span>
+            <span>Thinking about what you said...</span>
           </div>
         )}
 
