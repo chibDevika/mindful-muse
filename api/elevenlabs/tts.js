@@ -13,10 +13,20 @@ export default async function handler(req, res) {
 
   console.log(`\n🔊 [ELEVENLABS ROUTE] POST /api/elevenlabs/tts hit!`);
   console.log(`   Request received at: ${new Date().toISOString()}`);
-  console.log(`   Body keys:`, Object.keys(req.body || {}));
 
   try {
-    const { text, voiceId, format } = req.body;
+    // Parse JSON body for Vercel serverless functions
+    let body = req.body;
+    if (typeof body === 'string') {
+      body = JSON.parse(body);
+    }
+    if (!body && req.body) {
+      body = req.body;
+    }
+    
+    console.log(`   Body keys:`, Object.keys(body || {}));
+
+    const { text, voiceId, format } = body;
 
     console.log(`   Parsed request:`);
     console.log(`   - text length: ${text?.length || 0} characters`);

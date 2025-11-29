@@ -6,6 +6,17 @@
 import { generateResponse } from '../../server/services/gemini.js';
 
 export default async function handler(req, res) {
+  // Enable CORS
+  res.setHeader('Access-Control-Allow-Credentials', true);
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
+  res.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version');
+
+  // Handle preflight requests
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+
   // Only allow POST requests
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
@@ -13,10 +24,20 @@ export default async function handler(req, res) {
 
   console.log(`\n🤖 [GEMINI ROUTE] POST /api/gemini/generate hit!`);
   console.log(`   Request received at: ${new Date().toISOString()}`);
-  console.log(`   Body keys:`, Object.keys(req.body || {}));
 
   try {
-    const { promptTemplateId, promptVariables, sessionId } = req.body;
+    // Parse JSON body for Vercel serverless functions
+    let body = req.body;
+    if (typeof body === 'string') {
+      body = JSON.parse(body);
+    }
+    if (!body && req.body) {
+      body = req.body;
+    }
+    
+    console.log(`   Body keys:`, Object.keys(body || {}));
+
+    const { promptTemplateId, promptVariables, sessionId } = body;
 
     console.log(`   Parsed request:`);
     console.log(`   - promptTemplateId: ${promptTemplateId}`);
