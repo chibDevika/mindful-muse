@@ -3,14 +3,14 @@
  * Centralized fetch wrapper with retries and exponential backoff
  * 
  * TODO: Set these environment variables before deployment:
- * - VITE_WISPR_BASE: Base URL for Wispr transcription API
+ * - VITE_DEEPGRAM_BASE: Base URL for Deepgram transcription API
  * - VITE_OPENAI_BASE: Base URL for OpenAI/LLM API
  * - VITE_ELEVENLABS_BASE: Base URL for ElevenLabs TTS API
  * - VITE_SESSION_TTL: Session time-to-live in milliseconds (default: 3600000)
  */
 
 // API Base URLs - Replace with your actual endpoints
-const WISPR_BASE = import.meta.env.VITE_WISPR_BASE || '/api/wispr';
+const DEEPGRAM_BASE = import.meta.env.VITE_DEEPGRAM_BASE || '/api/deepgram';
 const OPENAI_BASE = import.meta.env.VITE_OPENAI_BASE || '/api/openai';
 const ELEVENLABS_BASE = import.meta.env.VITE_ELEVENLABS_BASE || '/api/elevenlabs';
 
@@ -68,7 +68,7 @@ async function fetchWithRetry(
 }
 
 // ============================================================================
-// WISPR TRANSCRIPTION API
+// DEEPGRAM TRANSCRIPTION API
 // ============================================================================
 
 export interface TranscribeResponse {
@@ -77,9 +77,9 @@ export interface TranscribeResponse {
 }
 
 /**
- * Transcribe audio using Wispr API
+ * Transcribe audio using Deepgram API
  * 
- * POST /api/wispr/transcribe
+ * POST /api/deepgram/transcribe
  * Content-Type: multipart/form-data
  * Body: { audioFile: Blob, sessionId: string }
  * 
@@ -89,16 +89,51 @@ export async function transcribeAudio(
   audioBlob: Blob,
   sessionId: string
 ): Promise<TranscribeResponse> {
+  const url = `${DEEPGRAM_BASE}/transcribe`;
+  console.log(`\n🎤 [FRONTEND] Starting transcription request`);
+  console.log(`   URL: ${url}`);
+  console.log(`   DEEPGRAM_BASE: ${DEEPGRAM_BASE}`);
+  console.log(`   Session ID: ${sessionId}`);
+  console.log(`   Audio blob size: ${audioBlob.size} bytes`);
+  console.log(`   Audio blob type: ${audioBlob.type}`);
+
   const formData = new FormData();
   formData.append('audioFile', audioBlob, 'recording.webm');
   formData.append('sessionId', sessionId);
 
-  const response = await fetchWithRetry(`${WISPR_BASE}/transcribe`, {
-    method: 'POST',
-    body: formData,
-  });
+  console.log(`   FormData created with audioFile and sessionId`);
 
-  return response.json();
+  try {
+    console.log(`   Sending request to: ${url}`);
+    const startTime = Date.now();
+    
+    const response = await fetchWithRetry(url, {
+      method: 'POST',
+      body: formData,
+    });
+
+    const duration = Date.now() - startTime;
+    console.log(`   Response received in ${duration}ms`);
+    console.log(`   Status: ${response.status} ${response.statusText}`);
+    console.log(`   OK: ${response.ok}`);
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+      console.error(`   ❌ Error response:`, errorData);
+      throw new TranscriptionError(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
+    }
+
+    const result = await response.json();
+    console.log(`   ✅ Success! Transcription length: ${result.transcription?.length || 0} chars`);
+    return result;
+  } catch (error) {
+    console.error(`   ❌ [FRONTEND] Transcription failed`);
+    console.error(`   Error:`, error);
+    if (error instanceof TranscriptionError) {
+      throw error;
+    }
+    throw new TranscriptionError(`Failed to transcribe audio: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
 }
 
 // ============================================================================
@@ -137,6 +172,14 @@ export async function generateResponse(
   sessionId: string,
   context: Array<{ role: 'user' | 'assistant'; content: string }> = []
 ): Promise<GenerateResponse> {
+  const url = `${OPENAI_BASE}/generate`;
+  console.log(`\n🤖 [FRONTEND] Starting OpenAI generation request`);
+  console.log(`   URL: ${url}`);
+  console.log(`   OPENAI_BASE: ${OPENAI_BASE}`);
+  console.log(`   Session ID: ${sessionId}`);
+  console.log(`   User text: ${userText.substring(0, 100)}...`);
+  console.log(`   Context messages: ${context.length}`);
+
   const request: GenerateRequest = {
     promptTemplateId: 'unwind_v1', // This maps to {{AI_PROMPT_TEMPLATE}} on the backend
     promptVariables: {
@@ -147,15 +190,48 @@ export async function generateResponse(
     sessionId,
   };
 
-  const response = await fetchWithRetry(`${OPENAI_BASE}/generate`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(request),
+  console.log(`   Request payload:`, {
+    promptTemplateId: request.promptTemplateId,
+    sessionId: request.sessionId,
+    userTextLength: request.promptVariables.userText.length,
+    contextLength: request.promptVariables.context?.length || 0,
   });
 
-  return response.json();
+  try {
+    console.log(`   Sending request to: ${url}`);
+    const startTime = Date.now();
+    
+    const response = await fetchWithRetry(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(request),
+    });
+
+    const duration = Date.now() - startTime;
+    console.log(`   Response received in ${duration}ms`);
+    console.log(`   Status: ${response.status} ${response.statusText}`);
+    console.log(`   OK: ${response.ok}`);
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+      console.error(`   ❌ Error response:`, errorData);
+      throw new GenerationError(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
+    }
+
+    const result = await response.json();
+    console.log(`   ✅ Success! Response length: ${result.outputText?.length || 0} chars`);
+    console.log(`   Tokens used: ${result.tokensUsed || 0}`);
+    return result;
+  } catch (error) {
+    console.error(`   ❌ [FRONTEND] Generation failed`);
+    console.error(`   Error:`, error);
+    if (error instanceof GenerationError) {
+      throw error;
+    }
+    throw new GenerationError(`Failed to generate response: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
 }
 
 // ============================================================================
@@ -181,27 +257,64 @@ export interface TTSResponse {
  * Body: { text: string, voiceId: string, format: string }
  * 
  * Response: { audioUrl: string, duration: number }
+ * 
+ * Note: Speed is controlled via ELEVENLABS_SPEED environment variable on the backend
  */
 export async function textToSpeech(
   text: string,
   voiceId: string = 'EXAVITQu4vr4xnSDxMaL', // Default: Sarah voice
   format: 'mp3' | 'wav' | 'ogg' = 'mp3'
 ): Promise<TTSResponse> {
+  const url = `${ELEVENLABS_BASE}/tts`;
+  console.log(`\n🔊 [FRONTEND] Starting TTS request`);
+  console.log(`   URL: ${url}`);
+  console.log(`   ELEVENLABS_BASE: ${ELEVENLABS_BASE}`);
+  console.log(`   Text length: ${text.length} characters`);
+  console.log(`   Voice ID: ${voiceId}`);
+  console.log(`   Format: ${format}`);
+  console.log(`   Speed: from backend ELEVENLABS_SPEED env var`);
+
   const request: TTSRequest = {
     text,
     voiceId,
     format,
   };
 
-  const response = await fetchWithRetry(`${ELEVENLABS_BASE}/tts`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(request),
-  });
+  try {
+    console.log(`   Sending request to: ${url}`);
+    const startTime = Date.now();
+    
+    const response = await fetchWithRetry(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(request),
+    });
 
-  return response.json();
+    const duration = Date.now() - startTime;
+    console.log(`   Response received in ${duration}ms`);
+    console.log(`   Status: ${response.status} ${response.statusText}`);
+    console.log(`   OK: ${response.ok}`);
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+      console.error(`   ❌ Error response:`, errorData);
+      throw new TTSError(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
+    }
+
+    const result = await response.json();
+    console.log(`   ✅ Success! Audio URL length: ${result.audioUrl?.length || 0} chars`);
+    console.log(`   Duration: ${result.duration}s`);
+    return result;
+  } catch (error) {
+    console.error(`   ❌ [FRONTEND] TTS failed`);
+    console.error(`   Error:`, error);
+    if (error instanceof TTSError) {
+      throw error;
+    }
+    throw new TTSError(`Failed to generate audio: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
 }
 
 // ============================================================================

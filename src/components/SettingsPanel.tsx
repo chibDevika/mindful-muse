@@ -1,9 +1,8 @@
-import { Settings, Volume2, Zap, Play } from 'lucide-react';
+import { Settings, Volume2, Play } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Slider } from '@/components/ui/slider';
+import { Select, SelectContent, SelectItem, SelectTrigger } from '@/components/ui/select';
 import {
   Sheet,
   SheetContent,
@@ -24,7 +23,7 @@ interface SettingsPanelProps {
 // Available ElevenLabs voices
 // TODO: Add your voice IDs here
 const VOICES = [
-  { id: 'EXAVITQu4vr4xnSDxMaL', name: 'Sarah', description: 'Calm, warm female voice' },
+  { id: 'ixW16lrB2mGXfoaYggBt', name: 'Arfa', description: 'Indian, calm and conversational voice' },
   { id: '9BWtsMINqrJLrRacOk9x', name: 'Aria', description: 'Gentle, soothing voice' },
   { id: 'FGY2WhTYpPnrIDTdsKH5', name: 'Laura', description: 'Friendly, approachable voice' },
   { id: 'TX3LPaxmHKxFdv7VOQHJ', name: 'Liam', description: 'Calm male voice' },
@@ -35,7 +34,14 @@ export function SettingsPanel({ settings, onSettingsChange, className }: Setting
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button variant="ghost" size="icon" className={cn("rounded-full", className)}>
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          className={cn(
+            "rounded-full bg-primary/15 text-primary hover:bg-accent hover:text-accent-foreground transition-colors",
+            className
+          )}
+        >
           <Settings className="w-5 h-5" />
           <span className="sr-only">Settings</span>
         </Button>
@@ -60,14 +66,29 @@ export function SettingsPanel({ settings, onSettingsChange, className }: Setting
               value={settings.voiceId}
               onValueChange={(value) => onSettingsChange({ voiceId: value })}
             >
-              <SelectTrigger>
-                <SelectValue placeholder="Select a voice" />
+              <SelectTrigger className="h-auto py-3 items-start">
+                <div className="flex flex-col items-start text-left w-full pr-6">
+                  {(() => {
+                    const selectedVoice = VOICES.find(v => v.id === settings.voiceId);
+                    if (!selectedVoice) {
+                      return <span className="text-muted-foreground">Select a voice</span>;
+                    }
+                    return (
+                      <>
+                        <span className="font-medium">{selectedVoice.name}</span>
+                        <span className="text-xs text-muted-foreground">
+                          {selectedVoice.description}
+                        </span>
+                      </>
+                    );
+                  })()}
+                </div>
               </SelectTrigger>
               <SelectContent>
                 {VOICES.map((voice) => (
                   <SelectItem key={voice.id} value={voice.id}>
-                    <div className="flex flex-col">
-                      <span>{voice.name}</span>
+                    <div className="flex flex-col items-start">
+                      <span className="font-medium">{voice.name}</span>
                       <span className="text-xs text-muted-foreground">
                         {voice.description}
                       </span>
@@ -76,32 +97,6 @@ export function SettingsPanel({ settings, onSettingsChange, className }: Setting
                 ))}
               </SelectContent>
             </Select>
-          </div>
-
-          {/* Playback Speed */}
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Zap className="w-4 h-4 text-muted-foreground" />
-                <Label>Playback Speed</Label>
-              </div>
-              <span className="text-sm text-muted-foreground">
-                {settings.playbackSpeed}x
-              </span>
-            </div>
-            <Slider
-              value={[settings.playbackSpeed]}
-              min={0.5}
-              max={2}
-              step={0.25}
-              onValueChange={([value]) => onSettingsChange({ playbackSpeed: value })}
-            />
-            <div className="flex justify-between text-xs text-muted-foreground">
-              <span>0.5x</span>
-              <span>1x</span>
-              <span>1.5x</span>
-              <span>2x</span>
-            </div>
           </div>
 
           {/* Auto-play */}

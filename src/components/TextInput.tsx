@@ -1,18 +1,20 @@
 import { useState, useRef, useEffect } from 'react';
-import { Send, Loader2 } from 'lucide-react';
+import { Send, Loader2, Mic } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 
 interface TextInputProps {
   onSubmit: (text: string) => void;
+  onStartRecording?: () => void;
   disabled?: boolean;
   placeholder?: string;
   className?: string;
 }
 
 export function TextInput({ 
-  onSubmit, 
+  onSubmit,
+  onStartRecording,
   disabled, 
   placeholder = "Type what's on your mind...",
   className 
@@ -58,22 +60,35 @@ export function TextInput({
         placeholder={placeholder}
         disabled={disabled}
         rows={1}
-        className="min-h-[44px] max-h-[200px] resize-none border-0 bg-transparent p-2 focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-muted-foreground/60"
+        className="min-h-[44px] max-h-[200px] resize-none border-0 bg-transparent p-2 pr-16 focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-muted-foreground/60"
       />
       
-      <Button
-        variant={text.trim() ? "support" : "ghost"}
-        size="icon"
-        onClick={handleSubmit}
-        disabled={!text.trim() || disabled}
-        className="shrink-0 transition-all duration-200"
-      >
-        {disabled ? (
-          <Loader2 className="w-5 h-5 animate-spin" />
-        ) : (
-          <Send className="w-5 h-5" />
-        )}
-      </Button>
+      {/* Show mic button when no text, send button when there's text */}
+      {!text.trim() && onStartRecording ? (
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={onStartRecording}
+          disabled={disabled}
+          className="absolute right-2 bottom-2 shrink-0 h-12 w-12 bg-primary/15 text-primary hover:bg-accent hover:text-accent-foreground transition-colors rounded-full"
+        >
+          <Mic className="w-6 h-6" />
+        </Button>
+      ) : (
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={handleSubmit}
+          disabled={!text.trim() || disabled}
+          className="absolute right-2 bottom-2 shrink-0 h-12 w-12 bg-primary/15 text-primary hover:bg-accent hover:text-accent-foreground transition-colors rounded-full"
+        >
+          {disabled ? (
+            <Loader2 className="w-5 h-5 animate-spin" />
+          ) : (
+            <Send className="w-5 h-5" />
+          )}
+        </Button>
+      )}
     </div>
   );
 }

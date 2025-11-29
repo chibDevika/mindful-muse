@@ -98,7 +98,8 @@ export default {
         glow: "var(--shadow-glow)",
       },
       fontFamily: {
-        sans: ["Inter", "ui-sans-serif", "system-ui", "-apple-system", "sans-serif"],
+        sans: ["Open Sans", "ui-sans-serif", "system-ui", "-apple-system", "sans-serif"],
+        heading: ["Raleway", "ui-sans-serif", "system-ui", "-apple-system", "sans-serif"],
       },
     },
   },

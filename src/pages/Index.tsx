@@ -3,11 +3,12 @@ import { HomeScreen } from '@/components/HomeScreen';
 import { RecordInput } from '@/components/RecordInput';
 import { TextInput } from '@/components/TextInput';
 import { SessionChat } from '@/components/SessionChat';
-import { ProcessingOverlay, MessageSkeleton } from '@/components/ProcessingOverlay';
+import { ProcessingOverlay } from '@/components/ProcessingOverlay';
 import { SettingsPanel } from '@/components/SettingsPanel';
-import { SessionSummary } from '@/components/SessionSummary';
+import { UnwindLogo } from '@/components/UnwindLogo';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Plus, AlertCircle, RefreshCw } from 'lucide-react';
+import { AlertCircle, RefreshCw } from 'lucide-react';
+import leafBg2 from '@/assets/leaf-bg-2.png';
 import { useToast } from '@/hooks/use-toast';
 import { useAudioPlayer } from '@/hooks/use-audio-player';
 import {
@@ -27,7 +28,6 @@ import {
   updateSettings,
   getConversationContext,
   getSessionId,
-  getRecentInsights,
   clearSession,
   type Message,
   type SessionSettings,
@@ -77,7 +77,11 @@ export default function Index() {
   const processUserInput = useCallback(async (userText: string) => {
     setError(null);
     
-    // Add user message
+    // Get conversation context BEFORE adding the new message
+    // This ensures we have all previous messages (user + assistant pairs)
+    const previousContext = getConversationContext();
+    
+    // Add user message to storage
     const userMessage = addMessage('user', userText);
     refreshMessages();
     setAppState('chat');
@@ -92,8 +96,9 @@ export default function Index() {
     refreshMessages();
 
     try {
-      const context = getConversationContext().slice(0, -1); // Exclude the placeholder
-      const response = await generateResponse(userText, getSessionId(), context);
+      // Pass previous context (all messages before the new user message)
+      // The new userText will be added by the backend
+      const response = await generateResponse(userText, getSessionId(), previousContext);
       
       // Update the placeholder with actual content
       updateMessage(placeholderMessage.id, response.outputText);
@@ -164,7 +169,9 @@ export default function Index() {
 
   // Handle play audio (TTS)
   const handlePlayAudio = useCallback(async (messageId: string) => {
-    const message = messages.find(m => m.id === messageId);
+    // Get message from storage to ensure we have the latest version
+    const allMessages = getMessages();
+    const message = allMessages.find(m => m.id === messageId);
     if (!message || message.role !== 'assistant') return;
 
     // If already playing this message, toggle pause
@@ -184,11 +191,13 @@ export default function Index() {
     setError(null);
 
     try {
+      // Speed is controlled via ELEVENLABS_SPEED environment variable on backend
       const result = await textToSpeech(message.content, settings.voiceId);
       updateMessageAudioUrl(messageId, result.audioUrl);
       refreshMessages();
       
-      audioPlayer.setPlaybackRate(settings.playbackSpeed);
+      // Speed is baked into the audio from ElevenLabs, so play at 1.0x
+      audioPlayer.setPlaybackRate(1.0);
       await audioPlayer.play(result.audioUrl);
     } catch (err) {
       console.error('TTS error:', err);
@@ -206,7 +215,7 @@ export default function Index() {
     } finally {
       setLoadingAudioMessageId(null);
     }
-  }, [messages, audioPlayer, settings.voiceId, settings.playbackSpeed, refreshMessages, toast]);
+  }, [audioPlayer, settings.voiceId, settings.playbackSpeed, refreshMessages, toast]);
 
   // Handle edit message
   const handleEditMessage = useCallback((messageId: string, newContent: string) => {
@@ -227,9 +236,6 @@ export default function Index() {
     setError(null);
   }, []);
 
-  // Get recent insights for summary
-  const recentInsights = getRecentInsights(3);
-
   // Render based on app state
   if (appState === 'home') {
     return (
@@ -241,35 +247,42 @@ export default function Index() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-background">
-      {/* Header */}
-      <header className="sticky top-0 z-40 flex items-center justify-between px-4 py-3 bg-background/80 backdrop-blur-xl border-b border-border">
+    <div className="flex flex-col min-h-screen relative">
+      {/* Background image with reduced opacity */}
+      <div 
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          backgroundImage: `url(${leafBg2})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+          opacity: 0.3,
+        }}
+      />
+      
+      {/* Overlay for readability */}
+      <div className="absolute inset-0 bg-background/50 pointer-events-none z-[1]" />
+      
+      {/* Content */}
+      <div className="relative z-10 flex flex-col min-h-screen">
+        {/* Header */}
+        <header className="sticky top-0 z-40 flex items-center justify-between px-4 py-3 bg-background/80 backdrop-blur-xl border-b border-border">
+        <Button
+          variant="ghost"
+          onClick={() => setAppState('home')}
+          className="flex items-center gap-2 font-heading text-base font-medium text-foreground hover:bg-transparent hover:text-primary px-0"
+        >
+          <UnwindLogo size={32} className="text-gentle" />
+          <span className="tracking-widest uppercase">Unwind</span>
+        </Button>
+        
         <div className="flex items-center gap-3">
           <Button
             variant="ghost"
-            size="icon"
-            onClick={() => {
-              if (messages.length === 0) {
-                setAppState('home');
-              }
-            }}
-            disabled={messages.length > 0}
-            className="rounded-full"
-          >
-            <ArrowLeft className="w-5 h-5" />
-          </Button>
-          <h1 className="text-lg font-medium text-foreground">Unwind</h1>
-        </div>
-        
-        <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="icon"
             onClick={handleNewSession}
-            className="rounded-full"
+            className="text-sm font-medium bg-primary/15 text-primary hover:bg-accent hover:text-accent-foreground transition-colors px-4 py-2 rounded-lg"
           >
-            <Plus className="w-5 h-5" />
-            <span className="sr-only">New session</span>
+            New Session
           </Button>
           <SettingsPanel
             settings={settings}
@@ -303,68 +316,46 @@ export default function Index() {
           </div>
         )}
 
-        {/* Session summary */}
-        {recentInsights.length > 0 && messages.length > 2 && (
-          <div className="px-4 pt-4">
-            <SessionSummary insights={recentInsights} />
-          </div>
-        )}
-
         {/* Chat messages */}
         <SessionChat
           messages={messages}
           onPlayAudio={handlePlayAudio}
-          onEditMessage={handleEditMessage}
           playingMessageId={audioPlayer.isPlaying ? messages.find(m => m.audioUrl)?.id : null}
           loadingAudioMessageId={loadingAudioMessageId}
           generatingMessageId={generatingMessageId}
+          onFeedback={(feedback) => {
+            console.log('User feedback:', feedback);
+            // TODO: Send feedback to backend or analytics
+          }}
           className="flex-1 px-4 py-6"
         />
-
-        {/* Generating skeleton */}
-        {isProcessing && generatingMessageId && (
-          <div className="px-4 pb-4">
-            <MessageSkeleton />
-          </div>
-        )}
       </main>
 
       {/* Input area */}
       <footer className="sticky bottom-0 z-40 p-4 bg-background/80 backdrop-blur-xl border-t border-border">
-        {appState === 'recording' ? (
-          <RecordInput
-            onRecordingComplete={handleRecordingComplete}
-            disabled={isProcessing}
-          />
-        ) : (
-          <div className="flex flex-col gap-3">
+        <div className="max-w-2xl mx-auto">
+          {appState === 'recording' ? (
+            <RecordInput
+              onRecordingComplete={handleRecordingComplete}
+              disabled={isProcessing}
+            />
+          ) : (
             <TextInput
               onSubmit={handleTextSubmit}
+              onStartRecording={() => setAppState('recording')}
               disabled={isProcessing}
               placeholder="Type what's on your mind..."
             />
-            
-            {/* Quick action to switch to recording */}
-            <div className="flex justify-center">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setAppState('recording')}
-                disabled={isProcessing}
-                className="text-muted-foreground"
-              >
-                Or record your thoughts
-              </Button>
-            </div>
-          </div>
-        )}
+          )}
+        </div>
       </footer>
 
-      {/* Processing overlay (only for transcription) */}
-      <ProcessingOverlay
-        isVisible={isProcessing && processingMessage.includes('Transcribing')}
-        message={processingMessage}
-      />
+        {/* Processing overlay (only for transcription) */}
+        <ProcessingOverlay
+          isVisible={isProcessing && processingMessage.includes('Transcribing')}
+          message={processingMessage}
+        />
+      </div>
     </div>
   );
 }

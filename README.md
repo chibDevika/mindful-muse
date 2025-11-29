@@ -27,7 +27,7 @@ The app connects to three backend APIs. Set these environment variables:
 
 ```env
 # API Base URLs
-VITE_WISPR_BASE=https://your-api.com/api/wispr
+VITE_DEEPGRAM_BASE=https://your-api.com/api/deepgram
 VITE_OPENAI_BASE=https://your-api.com/api/openai
 VITE_ELEVENLABS_BASE=https://your-api.com/api/elevenlabs
 
@@ -37,10 +37,10 @@ VITE_SESSION_TTL=3600000
 
 ## API Endpoints
 
-### 1. Wispr Transcription
+### 1. Deepgram Transcription
 
 ```
-POST /api/wispr/transcribe
+POST /api/deepgram/transcribe
 Content-Type: multipart/form-data
 
 Body:
@@ -133,11 +133,12 @@ Conversation context: {{context}}
 
 | Voice ID | Name | Description |
 |----------|------|-------------|
-| EXAVITQu4vr4xnSDxMaL | Sarah | Calm, warm female voice (default) |
+| EWBhzmIOnMsYIEHrdeuQ | Arfa | Indian, calm and conversational voice |
 | 9BWtsMINqrJLrRacOk9x | Aria | Gentle, soothing voice |
 | FGY2WhTYpPnrIDTdsKH5 | Laura | Friendly, approachable voice |
 | TX3LPaxmHKxFdv7VOQHJ | Liam | Calm male voice |
 | onwK4e9ZLuTAKqWW03F9 | Daniel | Warm, reassuring voice |
+
 
 ## Testing Locally
 
@@ -156,7 +157,7 @@ If you don't have the backend set up, the API calls will fail with errors. The U
 You can test the transcription endpoint by sending a `.wav` or `.webm` file:
 
 ```bash
-curl -X POST http://localhost:8080/api/wispr/transcribe \
+curl -X POST http://localhost:3001/api/deepgram/transcribe \
   -F "audioFile=@sample.wav" \
   -F "sessionId=test123"
 ```
@@ -194,7 +195,7 @@ src/
 - [ ] Set up backend API endpoints
 - [ ] Configure `{{AI_PROMPT_TEMPLATE}}` on backend
 - [ ] Add API keys to backend environment
-- [ ] Set `VITE_WISPR_BASE` environment variable
+- [ ] Set `VITE_DEEPGRAM_BASE` environment variable
 - [ ] Set `VITE_OPENAI_BASE` environment variable
 - [ ] Set `VITE_ELEVENLABS_BASE` environment variable
 - [ ] Test audio recording in target browsers

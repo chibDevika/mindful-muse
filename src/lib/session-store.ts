@@ -31,8 +31,8 @@ export interface SessionSettings {
 }
 
 const defaultSettings: SessionSettings = {
-  voiceId: 'EXAVITQu4vr4xnSDxMaL', // Sarah voice (default)
-  playbackSpeed: 1.0,
+  voiceId: 'ixW16lrB2mGXfoaYggBt', // Arfa voice (default)
+  playbackSpeed: 1.1,
   autoPlay: false,
 };
 
