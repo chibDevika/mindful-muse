@@ -15,6 +15,7 @@ import {
   transcribeAudio,
   generateResponse,
   textToSpeech,
+  sendFeedback,
   TranscriptionError,
   GenerationError,
   TTSError,
@@ -323,9 +324,14 @@ export default function Index() {
           playingMessageId={audioPlayer.isPlaying ? messages.find(m => m.audioUrl)?.id : null}
           loadingAudioMessageId={loadingAudioMessageId}
           generatingMessageId={generatingMessageId}
-          onFeedback={(feedback) => {
+          onFeedback={async (feedback) => {
             console.log('User feedback:', feedback);
-            // TODO: Send feedback to backend or analytics
+            try {
+              await sendFeedback(feedback, getSessionId(), messages.length);
+            } catch (error) {
+              // Non-critical - just log, don't show error to user
+              console.error('Failed to send feedback:', error);
+            }
           }}
           className="flex-1 px-4 py-6"
         />

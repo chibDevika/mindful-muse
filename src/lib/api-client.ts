@@ -341,3 +341,71 @@ export class TTSError extends Error {
     this.name = 'TTSError';
   }
 }
+
+// ============================================================================
+// FEEDBACK API
+// ============================================================================
+
+export interface FeedbackRequest {
+  feedback: 'positive' | 'negative';
+  sessionId: string;
+  messageCount: number;
+  timestamp: string;
+  userAgent?: string;
+  url?: string;
+}
+
+/**
+ * Send user feedback to the backend for logging
+ * 
+ * POST /api/feedback
+ * Content-Type: application/json
+ * Body: { feedback: 'positive' | 'negative', sessionId: string, messageCount: number, ... }
+ * 
+ * Response: { success: boolean, message: string, timestamp: string }
+ */
+export async function sendFeedback(
+  feedback: 'positive' | 'negative',
+  sessionId: string,
+  messageCount: number
+): Promise<{ success: boolean; message: string; timestamp: string }> {
+  const url = '/api/feedback';
+  console.log(`\n📊 [FRONTEND] Sending feedback`);
+  console.log(`   Feedback: ${feedback}`);
+  console.log(`   Session ID: ${sessionId}`);
+  console.log(`   Message Count: ${messageCount}`);
+
+  const request: FeedbackRequest = {
+    feedback,
+    sessionId,
+    messageCount,
+    timestamp: new Date().toISOString(),
+    userAgent: navigator.userAgent,
+    url: window.location.href,
+  };
+
+  try {
+    const response = await fetchWithRetry(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(request),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+      console.error(`   ❌ Error response:`, errorData);
+      throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
+    }
+
+    const result = await response.json();
+    console.log(`   ✅ Feedback sent successfully!`);
+    return result;
+  } catch (error) {
+    console.error(`   ❌ [FRONTEND] Feedback failed`);
+    console.error(`   Error:`, error);
+    // Don't throw - feedback is non-critical, just log the error
+    throw error;
+  }
+}
