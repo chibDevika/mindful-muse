@@ -14,12 +14,7 @@ async function listAvailableModels(apiKey) {
     // The Node.js SDK might not have listModels directly
     // Try common model names instead
     const commonModels = [
-      'gemini-1.5-flash',
-      'gemini-2.5-flash', 
-      'gemini-1.5-pro',
-      'gemini-pro',
-      'gemini-1.5-flash-001',
-      'gemini-pro-vision'
+      'gemini-2.5-flash'
     ];
     
     // Test which models are available by trying to get them
