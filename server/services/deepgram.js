@@ -38,13 +38,32 @@ export async function transcribeAudio(audioBuffer, mimeType, sessionId) {
     // Build Deepgram API URL with parameters
     const model = process.env.DEEPGRAM_MODEL || 'nova-2';
     const language = process.env.DEEPGRAM_LANGUAGE || 'en-US';
-    const url = `${DEEPGRAM_API_URL}/listen?model=${model}&language=${language}&punctuate=true&diarize=false`;
+    
+    // Build URL parameters
+    const params = new URLSearchParams({
+      model: model,
+      punctuate: 'true',
+      diarize: 'false',
+    });
+    
+    // Handle auto language detection vs specific language
+    if (language.toLowerCase() === 'auto') {
+      params.append('detect_language', 'true');
+    } else {
+      params.append('language', language);
+    }
+    
+    const url = `${DEEPGRAM_API_URL}/listen?${params.toString()}`;
 
     console.log(`\n🌐 [DEEPGRAM SERVICE] Calling Deepgram API`);
     console.log(`   URL: ${url}`);
     console.log(`   Content-Type: ${contentType}`);
     console.log(`   Model: ${model}`);
-    console.log(`   Language: ${language}`);
+    if (language.toLowerCase() === 'auto') {
+      console.log(`   Language: Auto-detect (detect_language=true)`);
+    } else {
+      console.log(`   Language: ${language}`);
+    }
     console.log(`   Payload size: ${audioBuffer.length} bytes`);
 
     const startTime = Date.now();
